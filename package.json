@@ -10,6 +10,10 @@
   },
   "devDependencies": {
     "@nuxt/devtools": "latest",
-    "nuxt": "^3.7.0"
+    "@nuxtjs/eslint-module": "^4.1.0",
+    "@nuxtjs/tailwindcss": "^6.8.0",
+    "eslint": "^8.48.0",
+    "nuxt": "^3.7.0",
+    "nuxt-icon": "^0.5.0"
   }
 }
