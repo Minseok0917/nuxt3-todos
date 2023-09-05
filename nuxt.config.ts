@@ -7,6 +7,7 @@ export default defineNuxtConfig({
       autoprefixer: {},
     },
   },
+  plugins: [],
   css: ["~/assets/scss/module.scss"],
   modules: ["nuxt-icon", "@nuxtjs/eslint-module"],
 });
