@@ -3,13 +3,24 @@
     <div class="todo-container">
       <div class="todo-head">
         <h1 class="todo-title">TODOS</h1>
-        <input
-          type="text"
-          class="todo-input"
-          :value="state.todoInput"
-          @input="handlers.todos.input"
-          @keydown="handlers.todos.keydown"
-        />
+        <div class="todo-input-box">
+          <input
+            type="text"
+            class="todo-input"
+            :value="state.todoInput"
+            @input="handlers.todos.input"
+            @keydown="handlers.todos.keydown"
+          />
+          <template v-if="state.todos.length">
+            <div
+              class="todo-toggle-checked"
+              :class="{ active: state.allChecked }"
+              @click="handlers.todos.allCheckedToggle"
+            >
+              <Icon name="ion:ios-arrow-down"></Icon>
+            </div>
+          </template>
+        </div>
       </div>
       <div class="todo-body" v-if="state.todos.length">
         <div class="todo-list" v-if="state.currentTodos.length">
@@ -52,7 +63,9 @@
           </template>
         </div>
         <div class="todo-options">
-          <span class="todo-length">{{ state.todos.length }} items left</span>
+          <span class="todo-length">
+            {{ state.todos.length }} item{{ state.itemManyText }} left
+          </span>
           <div class="todo-filters">
             <template v-for="buttonText in filterButtons" :key="buttonText">
               <button
@@ -78,31 +91,44 @@
   </div>
 </template>
 <script setup>
+import { useStoreTodos } from "~/stores/store.todos";
+
+const storeTodos = useStoreTodos();
 const filterButtons = ["all", "active", "complete"];
 const state = reactive({
-  key: 0,
-  editId: -1,
-  todos: [],
-  todoInput: "",
-  selectedFilter: "all",
-  test: "",
+  key: computed(() => storeTodos.key),
+  todos: computed({
+    get: () => storeTodos.todos,
+    set: (todos) => (storeTodos.todos = todos),
+  }),
+  todoInput: computed({
+    get: () => storeTodos.todoInput,
+    set: (value) => (storeTodos.todoInput = value),
+  }),
+  selectedFilter: computed({
+    get: () => storeTodos.selectedFilter,
+    set: (filter) => (storeTodos.selectedFilter = filter),
+  }),
 
   all: computed(() => state.todos),
   active: computed(() => state.todos.filter(({ checked }) => !checked)),
   complete: computed(() => state.todos.filter(({ checked }) => checked)),
   currentTodos: computed(() => state[state.selectedFilter] || state.all),
+
+  itemManyText: computed(() => (state.todos.length > 1 ? "s" : "")),
+  allChecked: computed(() => state.todos.every(({ checked }) => checked)),
 });
 
 const handlers = {
   todos: {
     input(event) {
-      state.todoInput = event.target.value;
+      storeTodos.todoInput = event.target.value;
     },
     keydown(event) {
       const isCreated = [13, 9].includes(event.keyCode); // Enter, Tab
       if (isCreated) {
         state.todos.push({
-          id: state.key++,
+          id: storeTodos.key++,
           text: state.todoInput,
           checked: false,
           edit: false,
@@ -138,6 +164,13 @@ const handlers = {
     editInput(event, todo) {
       todo.text = event.target.value;
     },
+    allCheckedToggle() {
+      if (state.allChecked) {
+        state.todos = state.todos.map((todo) => ({ ...todo, checked: false }));
+      } else {
+        state.todos = state.todos.map((todo) => ({ ...todo, checked: true }));
+      }
+    },
   },
 };
 </script>
@@ -154,8 +187,11 @@ const handlers = {
   }
   &-head {
   }
+  &-input-box {
+    @apply relative;
+  }
   &-input {
-    @apply w-full p-4;
+    @apply w-full p-4 pl-[54px];
     @apply text-sm;
     @apply border border-slate-200 rounded-sm;
     @apply outline-none;
@@ -171,12 +207,12 @@ const handlers = {
   }
 
   &-body {
-    @apply p-4;
+    /* @apply py-4; */
     @apply border border-slate-100;
     @apply shadow-2xl shadow-slate-200;
   }
   &-item {
-    @apply flex items-center  p-2;
+    @apply flex items-center  px-4 py-2;
     @apply border-b border-b-slate-100;
 
     &:last-child {
@@ -245,6 +281,17 @@ const handlers = {
   }
   &-length {
     @apply text-sm text-slate-400;
+  }
+  &-toggle-checked {
+    @apply absolute left-0 top-1/2 -translate-y-1/2;
+    @apply w-[48px];
+    @apply cursor-pointer;
+    @apply text-3xl text-slate-200;
+    @apply flex justify-end items-center;
+
+    &.active {
+      @apply text-slate-400;
+    }
   }
 }
 </style>

@@ -9,5 +9,16 @@ export default defineNuxtConfig({
   },
   plugins: [],
   css: ["~/assets/scss/module.scss"],
-  modules: ["nuxt-icon", "@nuxtjs/eslint-module"],
+  modules: [
+    "nuxt-icon",
+    "@nuxtjs/eslint-module",
+    "@pinia/nuxt",
+    "@pinia-plugin-persistedstate/nuxt",
+  ],
+  pinia: {
+    autoImports: [
+      "defineStore", // import { defineStore } from 'pinia'
+      ["defineStore", "definePiniaStore"], // import { defineStore as definePiniaStore } from 'pinia'
+    ],
+  },
 });
