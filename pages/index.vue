@@ -11,14 +11,18 @@
           @keydown="handlers.todos.keydown"
         />
       </div>
-      <div class="todo-body">
+      <div class="todo-body" v-if="state.todos.length">
         <div class="todo-list">
-          <div class="todo-item" v-for="todo in state.todos" :key="todo">
+          <div class="todo-item" v-for="todo in state.todos" :key="todo.id">
             <div class="todo-checkbox"></div>
             <div class="todo-text">
-              {{ todo }}
+              {{ todo.text }}
             </div>
-            <button class="todo-delete" type="button">
+            <button
+              class="todo-delete"
+              type="button"
+              @click="handlers.todos.delete(todo.id)"
+            >
               <Icon name="ant-design:delete-outlined" />
             </button>
           </div>
@@ -29,6 +33,7 @@
 </template>
 <script setup>
 const state = reactive({
+  key: 0,
   todos: [],
   todoInput: "",
 });
@@ -41,9 +46,15 @@ const handlers = {
     keydown(event) {
       const isCreated = [13, 9].includes(event.keyCode); // Enter, Tab
       if (isCreated) {
-        state.todos.push(state.todoInput);
+        state.todos.push({
+          id: state.key++,
+          text: state.todoInput,
+        });
         state.todoInput = "";
       }
+    },
+    delete(todoId) {
+      state.todos = state.todos.filter(({ id }) => id !== todoId);
     },
   },
 };
