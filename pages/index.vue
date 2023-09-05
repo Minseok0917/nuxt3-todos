@@ -41,7 +41,6 @@
                   class="todo-edit-input"
                   :value="todo.text"
                   v-focus="true"
-                  ref="$foucsInput"
                   @focusout="(e) => handlers.todos.editFocusOut(e, todo)"
                   @input="(e) => handlers.todos.editInput(e, todo)"
                   @keydown="(e) => handlers.todos.editKeydown(e, todo)"
