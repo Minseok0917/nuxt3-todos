@@ -12,37 +12,85 @@
         />
       </div>
       <div class="todo-body" v-if="state.todos.length">
-        <div class="todo-list">
-          <template v-for="todo in state.todos" :key="todo.id">
-            <div class="todo-item" :class="{ checked: todo.checked }">
+        <div class="todo-list" v-if="state.currentTodos.length">
+          <template v-for="todo in state.currentTodos" :key="todo.id">
+            <div
+              class="todo-item"
+              :class="{ checked: todo.checked, edit: todo.edit }"
+            >
               <div
                 class="todo-checkbox"
                 @click="handlers.todos.toggleChecked(todo)"
               >
                 <Icon v-if="todo.checked" name="ic:baseline-check"></Icon>
               </div>
-              <div class="todo-text">
-                {{ todo.text }}
-              </div>
-              <button
-                class="todo-delete"
-                type="button"
-                @click="handlers.todos.delete(todo)"
-              >
-                <Icon name="ant-design:delete-outlined" />
-              </button>
+              <template v-if="todo.edit">
+                <input
+                  type="text"
+                  class="todo-edit-input"
+                  :value="todo.text"
+                  v-focus="true"
+                  ref="$foucsInput"
+                  @focusout="(e) => handlers.todos.editFocusOut(e, todo)"
+                  @input="(e) => handlers.todos.editInput(e, todo)"
+                  @keydown="(e) => handlers.todos.editKeydown(e, todo)"
+                />
+              </template>
+              <template v-else>
+                <div class="todo-text" @dblclick="handlers.todos.edit(todo)">
+                  {{ todo.text }}
+                </div>
+                <button
+                  class="todo-delete"
+                  type="button"
+                  @click="handlers.todos.delete(todo)"
+                >
+                  <Icon name="ant-design:delete-outlined" />
+                </button>
+              </template>
             </div>
           </template>
+        </div>
+        <div class="todo-options">
+          <span class="todo-length">{{ state.todos.length }} items left</span>
+          <div class="todo-filters">
+            <template v-for="buttonText in filterButtons" :key="buttonText">
+              <button
+                type="button"
+                :class="{ active: state.selectedFilter === buttonText }"
+                @click="handlers.todos.changeFilter(buttonText)"
+              >
+                {{ buttonText }}
+              </button>
+            </template>
+          </div>
+          <button
+            v-if="state.complete.length"
+            class="todo-clear"
+            type="button"
+            @click="handlers.todos.clearComplete"
+          >
+            Clear Complete
+          </button>
         </div>
       </div>
     </div>
   </div>
 </template>
 <script setup>
+const filterButtons = ["all", "active", "complete"];
 const state = reactive({
   key: 0,
-  todos: [{ key: 1, text: "1231", active: false }],
+  editId: -1,
+  todos: [],
   todoInput: "",
+  selectedFilter: "all",
+  test: "",
+
+  all: computed(() => state.todos),
+  active: computed(() => state.todos.filter(({ checked }) => !checked)),
+  complete: computed(() => state.todos.filter(({ checked }) => checked)),
+  currentTodos: computed(() => state[state.selectedFilter] || state.all),
 });
 
 const handlers = {
@@ -57,6 +105,7 @@ const handlers = {
           id: state.key++,
           text: state.todoInput,
           checked: false,
+          edit: false,
         });
         state.todoInput = "";
       }
@@ -68,13 +117,34 @@ const handlers = {
       todo.checked = !todo.checked;
       console.log(todo);
     },
+    changeFilter(filterName) {
+      state.selectedFilter = filterName;
+    },
+    clearComplete() {
+      state.todos = state.active;
+    },
+    edit(todo) {
+      todo.edit = true;
+    },
+    editFocusOut(event, todo) {
+      todo.edit = false;
+    },
+    editKeydown(event, todo) {
+      const isUpdated = [13, 9].includes(event.keyCode); // Enter, Tab
+      if (isUpdated) {
+        todo.edit = false;
+      }
+    },
+    editInput(event, todo) {
+      todo.text = event.target.value;
+    },
   },
 };
 </script>
 <style lang="scss">
 .todo {
   &-container {
-    @apply w-[500px];
+    @apply w-[600px];
     @apply mx-auto mt-20;
   }
   &-title {
@@ -90,8 +160,14 @@ const handlers = {
     @apply border border-slate-200 rounded-sm;
     @apply outline-none;
   }
+  &-edit-input {
+    @apply flex-1 p-2;
+    @apply text-sm;
+    @apply outline-none;
+    @apply border border-slate-200;
+  }
   &-list {
-    @apply flex flex-col gap-4;
+    @apply flex flex-col;
   }
 
   &-body {
@@ -100,13 +176,23 @@ const handlers = {
     @apply shadow-2xl shadow-slate-200;
   }
   &-item {
-    @apply flex items-center gap-4 p-2;
+    @apply flex items-center  p-2;
+    @apply border-b border-b-slate-100;
+
+    &:last-child {
+      @apply border-b-transparent;
+    }
     &:hover .todo-delete {
       @apply flex;
     }
     &.checked {
       .todo-text {
         @apply line-through text-slate-400;
+      }
+    }
+    &.edit {
+      .todo-checkbox {
+        visibility: hidden;
       }
     }
   }
@@ -122,7 +208,7 @@ const handlers = {
     }
   }
   &-text {
-    @apply flex-1;
+    @apply flex-1 p-2;
     @apply text-sm text-slate-600 select-none;
     @apply whitespace-nowrap text-ellipsis overflow-hidden;
   }
@@ -133,6 +219,32 @@ const handlers = {
     .icon {
       @apply text-slate-300 hover:text-slate-500;
     }
+  }
+  &-options {
+    @apply relative;
+    @apply p-2;
+    @apply flex justify-between;
+  }
+  &-filters {
+    @apply absolute left-0 right-0;
+    @apply flex justify-center gap-2;
+    @apply text-sm text-slate-400;
+
+    button {
+      @apply px-2;
+      @apply capitalize;
+      @apply border border-transparent rounded-sm;
+      @apply hover:border hover:border-rose-100;
+      &.active {
+        @apply border-rose-200;
+      }
+    }
+  }
+  &-clear {
+    @apply relative text-sm text-slate-400;
+  }
+  &-length {
+    @apply text-sm text-slate-400;
   }
 }
 </style>
