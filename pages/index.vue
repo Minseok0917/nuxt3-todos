@@ -13,19 +13,26 @@
       </div>
       <div class="todo-body" v-if="state.todos.length">
         <div class="todo-list">
-          <div class="todo-item" v-for="todo in state.todos" :key="todo.id">
-            <div class="todo-checkbox"></div>
-            <div class="todo-text">
-              {{ todo.text }}
+          <template v-for="todo in state.todos" :key="todo.id">
+            <div class="todo-item" :class="{ checked: todo.checked }">
+              <div
+                class="todo-checkbox"
+                @click="handlers.todos.toggleChecked(todo)"
+              >
+                <Icon v-if="todo.checked" name="ic:baseline-check"></Icon>
+              </div>
+              <div class="todo-text">
+                {{ todo.text }}
+              </div>
+              <button
+                class="todo-delete"
+                type="button"
+                @click="handlers.todos.delete(todo)"
+              >
+                <Icon name="ant-design:delete-outlined" />
+              </button>
             </div>
-            <button
-              class="todo-delete"
-              type="button"
-              @click="handlers.todos.delete(todo.id)"
-            >
-              <Icon name="ant-design:delete-outlined" />
-            </button>
-          </div>
+          </template>
         </div>
       </div>
     </div>
@@ -34,7 +41,7 @@
 <script setup>
 const state = reactive({
   key: 0,
-  todos: [],
+  todos: [{ key: 1, text: "1231", active: false }],
   todoInput: "",
 });
 
@@ -49,12 +56,17 @@ const handlers = {
         state.todos.push({
           id: state.key++,
           text: state.todoInput,
+          checked: false,
         });
         state.todoInput = "";
       }
     },
-    delete(todoId) {
-      state.todos = state.todos.filter(({ id }) => id !== todoId);
+    delete(todo) {
+      state.todos = state.todos.filter(({ id }) => id !== todo.id);
+    },
+    toggleChecked(todo) {
+      todo.checked = !todo.checked;
+      console.log(todo);
     },
   },
 };
@@ -92,16 +104,26 @@ const handlers = {
     &:hover .todo-delete {
       @apply flex;
     }
+    &.checked {
+      .todo-text {
+        @apply line-through text-slate-400;
+      }
+    }
   }
   &-checkbox {
     @apply w-[30px] h-[30px];
     @apply cursor-pointer;
+    @apply flex justify-center items-center;
     @apply border border-slate-200 rounded-full;
     @apply hover:border-slate-300;
+
+    .icon {
+      @apply text-green-600 text-xl;
+    }
   }
   &-text {
     @apply flex-1;
-    @apply text-sm text-slate-600;
+    @apply text-sm text-slate-600 select-none;
     @apply whitespace-nowrap text-ellipsis overflow-hidden;
   }
   &-delete {
