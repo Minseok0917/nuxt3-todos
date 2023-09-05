@@ -125,7 +125,7 @@ const handlers = {
     },
     keydown(event) {
       const isCreated = [13, 9].includes(event.keyCode); // Enter, Tab
-      if (isCreated) {
+      if (isCreated && state.todoInput.trim().length) {
         state.todos.push({
           id: storeTodos.key++,
           text: state.todoInput,
@@ -158,6 +158,9 @@ const handlers = {
       const isUpdated = [13, 9].includes(event.keyCode); // Enter, Tab
       if (isUpdated) {
         todo.edit = false;
+        if (todo.text.trim().length === 0) {
+          state.todos = state.todos.filter(({ id }) => id !== todo.id);
+        }
       }
     },
     editInput(event, todo) {
