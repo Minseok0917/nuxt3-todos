@@ -1,4 +1,7 @@
 {
   // https://nuxt.com/docs/guide/concepts/typescript
+  "compilerOptions": {
+    "lib": ["ESNext.Array"]
+  },
   "extends": "./.nuxt/tsconfig.json"
 }

@@ -11,7 +11,8 @@ export default defineNuxtConfig({
   css: ["~/assets/scss/module.scss"],
   modules: [
     "nuxt-icon",
-    "@nuxtjs/eslint-module",
+    "@nuxtjs/tailwindcss",
+    // "@nuxtjs/eslint-module",
     "@pinia/nuxt",
     "@pinia-plugin-persistedstate/nuxt",
   ],

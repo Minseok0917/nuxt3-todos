@@ -25,14 +25,8 @@
       <div class="todo-body" v-if="state.todos.length">
         <div class="todo-list" v-if="state.currentTodos.length">
           <template v-for="todo in state.currentTodos" :key="todo.id">
-            <div
-              class="todo-item"
-              :class="{ checked: todo.checked, edit: todo.edit }"
-            >
-              <div
-                class="todo-checkbox"
-                @click="handlers.todos.toggleChecked(todo)"
-              >
+            <div class="todo-item" :class="{ checked: todo.checked, edit: todo.edit }">
+              <div class="todo-checkbox" @click="handlers.todos.toggleChecked(todo)">
                 <Icon v-if="todo.checked" name="ic:baseline-check"></Icon>
               </div>
               <template v-if="todo.edit">
@@ -50,11 +44,7 @@
                 <div class="todo-text" @dblclick="handlers.todos.edit(todo)">
                   {{ todo.text }}
                 </div>
-                <button
-                  class="todo-delete"
-                  type="button"
-                  @click="handlers.todos.delete(todo)"
-                >
+                <button class="todo-delete" type="button" @click="handlers.todos.delete(todo)">
                   <Icon name="ant-design:delete-outlined" />
                 </button>
               </template>
@@ -62,9 +52,7 @@
           </template>
         </div>
         <div class="todo-options">
-          <span class="todo-length">
-            {{ state.todos.length }} item{{ state.itemManyText }} left
-          </span>
+          <span class="todo-length"> {{ state.todos.length }} item{{ state.itemManyText }} left </span>
           <div class="todo-filters">
             <template v-for="buttonText in filterButtons" :key="buttonText">
               <button
@@ -76,12 +64,7 @@
               </button>
             </template>
           </div>
-          <button
-            v-if="state.complete.length"
-            class="todo-clear"
-            type="button"
-            @click="handlers.todos.clearComplete"
-          >
+          <button v-if="state.complete.length" class="todo-clear" type="button" @click="handlers.todos.clearComplete">
             Clear Complete
           </button>
         </div>
